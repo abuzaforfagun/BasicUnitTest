@@ -1,5 +1,6 @@
 ﻿using BasicUnitTest.Core;
 using BasicUnitTest.Presistance;
+using BasicUnitTest.Repository;
 using System;
 using System.Collections.Generic;
 using System.Linq;
@@ -9,31 +10,30 @@ namespace BasicUnitTest.Services
 {
     public class VideoService
     {
-        VideoDbContext context;
-        public VideoService()
+        private readonly IVideoRepository repository;
+
+        public VideoService(IVideoRepository repository)
         {
-            context = new VideoDbContext();
+            this.repository = repository;
         }
         public Video AddVideo(Video video)
         {
             if (video == null)
                 throw new ArgumentNullException();
-            context.Videos.Add(video);
-            context.SaveChanges();
-            return video;
+            return repository.AddVideo(video);
         }
 
         public string GetUnProcessedVideos()
         {
             var videos = new List<int>();
-            videos = context.Videos.Where(v => v.IsProcessed == false).Select(v => v.Id).ToList();
+            videos = repository.GetUnpublishedVideos().Select(v => v.Id).ToList();
 
             return String.Join(",", videos);
         }
 
         public List<Video> GetAllVideo()
         {
-            return context.Videos.ToList();
+            return repository.GetAllVideos();
         }
     }
 }
