@@ -26,12 +26,7 @@ namespace BasicUnitTest.Services
         public string GetUnProcessedVideos()
         {
             var videos = new List<int>();
-            var videoList = repository.GetAllVideos();
-            foreach(var v in videoList)
-            {
-                if (v.IsProcessed == false)
-                    videos.Add(v.Id);
-            }
+            videos = repository.GetUnpublishedVideos().Select(v => v.Id).ToList();
 
             return String.Join(",", videos);
         }
