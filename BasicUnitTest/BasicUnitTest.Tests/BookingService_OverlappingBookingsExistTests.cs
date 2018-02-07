@@ -13,47 +13,90 @@ namespace BasicUnitTest.Tests
     public class BookingService_OverlappingBookingsExistTests
     {
         List<Booking> bookingList;
-        Booking booking;
+        Booking existingBooking;
         Mock<IBookingRepository> repository;
+
 
         [SetUp]
         public void Setup()
         {
             repository = new Mock<IBookingRepository>();
+            existingBooking = new Booking
+            {
+                Id = 2,
+                ArrivalDate = ArriveOn(2017, 10, 10),
+                DepartureDate = DepartureOn(2017, 10, 13),
+                Reference = "a"
+            };
             bookingList = new List<Booking>
             {
-                new Booking{
-                    Id = 2,
-                    ArrivalDate = new DateTime(2017, 10, 10),
-                    DepartureDate = new DateTime(2017, 10, 13),
-                    Reference = "a"
-                },
-                new Booking{
-                    Id = 3,
-                    ArrivalDate = new DateTime(2017, 10, 1),
-                    DepartureDate = new DateTime(2017, 10, 5),
-                    Reference = "a"
-                },
+                existingBooking
             };
+            repository.Setup(br => br.GetActiveBooking(1))
+                .Returns(bookingList.AsQueryable());
+        }
+
+        
+        [Test]
+        public void ArrivalBeforeArrivalDateAndDepartureBeforeArrivalDate()
+        {
+            var result = BookingService.OverlappingBookingsExist(
+                    new Booking
+                    {
+                        Id = 1,
+                        ArrivalDate = ArriveBeforeExistingArrivalDate(days:-10),
+                        DepartureDate = ArriveBeforeExistingArrivalDate(),
+                        Reference = "b",
+                    }, repository.Object
+                );
+            Assert.That(result, Is.Empty);
         }
 
         [Test]
         public void ArrivalAndDepartureDateOverlappedButExistingBookingCancelled()
         {
-            repository.Setup(br => br.GetActiveBooking(1))
-                .Returns(bookingList.AsQueryable());
             var result = BookingService.OverlappingBookingsExist(
                     new Booking
                     {
                         Id = 1,
-                        ArrivalDate = new DateTime(2017, 10, 1),
-                        DepartureDate = new DateTime(2017, 10, 3),
+                        ArrivalDate = ArriveAfterExistingArrivalDate(),
+                        DepartureDate = DepartureBeforeExistingDepartureDate(),
                         Reference = "b",
                         Status = "Cancelled"
 
                     }, repository.Object
                 );
             Assert.That(result, Is.Empty);
+        }
+
+        private DateTime ArriveAfterExistingArrivalDate(int days = 1)
+        {
+            return existingBooking.ArrivalDate.AddDays(days);
+        }
+
+        private DateTime ArriveBeforeExistingArrivalDate(int days = -1)
+        {
+            return existingBooking.ArrivalDate.AddDays(days);
+        }
+
+        private DateTime DepartureBeforeExistingDepartureDate(int days = -1)
+        {
+            return existingBooking.DepartureDate.AddDays(days);
+        }
+
+        private DateTime DepartureAfterExistingDepartureDate(int days = 1)
+        {
+            return existingBooking.DepartureDate.AddDays(days);
+        }
+
+        private DateTime ArriveOn(int year, int month, int day)
+        {
+            return new DateTime(year, month, day, 14, 0, 0);
+        }
+
+        private DateTime DepartureOn(int year, int month, int day)
+        {
+            return new DateTime(year, month, day, 10, 0, 0);
         }
     }
 }
