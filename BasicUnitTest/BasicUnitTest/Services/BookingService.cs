@@ -12,7 +12,6 @@ namespace BasicUnitTest.Services
             if (booking.Status == "Cancelled")
                 return string.Empty;
 
-
             var bookings = new BookingRepository().GetActiveBooking(booking.Id);
 
             var overlappingBooking =
