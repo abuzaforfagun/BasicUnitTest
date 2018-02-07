@@ -1,8 +1,9 @@
-﻿using System;
+﻿using BasicUnitTest.Repository;
+using System;
 using System.Collections.Generic;
 using System.Linq;
 
-namespace TestNinja.Mocking
+namespace BasicUnitTest.Services
 {
     public static class BookingService
     {
@@ -11,11 +12,8 @@ namespace TestNinja.Mocking
             if (booking.Status == "Cancelled")
                 return string.Empty;
 
-            var unitOfWork = new UnitOfWork();
-            var bookings =
-                unitOfWork.Query<Booking>()
-                    .Where(
-                        b => b.Id != booking.Id && b.Status != "Cancelled");
+
+            var bookings = new BookingRepository().GetActiveBooking(booking.Id);
 
             var overlappingBooking =
                 bookings.FirstOrDefault(
@@ -29,7 +27,7 @@ namespace TestNinja.Mocking
         }
     }
 
-    public class UnitOfWork
+    public class UnitOfWorkBooking
     {
         public IQueryable<T> Query<T>()
         {
