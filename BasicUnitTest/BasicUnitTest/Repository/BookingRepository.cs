@@ -7,7 +7,7 @@ using System.Text;
 
 namespace BasicUnitTest.Repository
 {
-    public class BookingRepository
+    public class BookingRepository : IBookingRepository
     {
 
         public IQueryable<Booking> GetActiveBooking(int?existingBookingId=null)

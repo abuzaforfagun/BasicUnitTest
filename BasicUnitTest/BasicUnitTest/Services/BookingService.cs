@@ -7,12 +7,12 @@ namespace BasicUnitTest.Services
 {
     public static class BookingService
     {
-        public static string OverlappingBookingsExist(Booking booking)
+        public static string OverlappingBookingsExist(Booking booking, IBookingRepository repository)
         {
             if (booking.Status == "Cancelled")
                 return string.Empty;
 
-            var bookings = new BookingRepository().GetActiveBooking(booking.Id);
+            var bookings = repository.GetActiveBooking(booking.Id);
 
             var overlappingBooking =
                 bookings.FirstOrDefault(
